@@ -5,6 +5,7 @@ import "./globals.css"
 import { CartProvider } from "@/lib/cart-context"
 import { WishlistProvider } from "@/lib/wishlist-context"
 import { ReviewsProvider } from "@/lib/reviews-context"
+import { ArtistFollowProvider } from "@/lib/artist-follow-context"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -43,7 +44,9 @@ export default function RootLayout({
       <body className={`font-sans antialiased`}>
         <CartProvider>
           <WishlistProvider>
-            <ReviewsProvider>{children}</ReviewsProvider>
+            <ArtistFollowProvider>
+              <ReviewsProvider>{children}</ReviewsProvider>
+            </ArtistFollowProvider>
           </WishlistProvider>
         </CartProvider>
       </body>

@@ -6,12 +6,22 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { getArtistById, getArtworksByArtist } from "@/lib/mock-data"
 import { ArtworkCard } from "@/components/artwork-card"
+import { useArtistFollow } from "@/lib/artist-follow-context"
 
 export default function ArtistProfile() {
   const params = useParams()
   const artistId = Number.parseInt(params.id as string)
   const artist = getArtistById(artistId)
   const artworks = artist ? getArtworksByArtist(artistId) : []
+  const { followArtist, unfollowArtist, isFollowing } = useArtistFollow()
+
+  const handleFollowToggle = () => {
+    if (isFollowing(artistId)) {
+      unfollowArtist(artistId)
+    } else {
+      followArtist(artistId)
+    }
+  }
 
   if (!artist) {
     return (
@@ -55,12 +65,21 @@ export default function ArtistProfile() {
                 <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">{artist.name}</h1>
                 <p className="text-lg text-muted-foreground leading-relaxed mb-6">{artist.bio}</p>
                 <div className="flex gap-4">
-                  <button className="px-6 py-3 rounded-lg bg-primary text-primary-foreground font-bold hover:opacity-90 transition-all duration-300 ease-out">
-                    Follow Artist
+                  <button
+                    onClick={handleFollowToggle}
+                    className={`px-6 py-3 rounded-lg font-bold transition-all duration-300 ease-out ${
+                      isFollowing(artistId)
+                        ? "bg-secondary text-secondary-foreground hover:opacity-90"
+                        : "bg-primary text-primary-foreground hover:opacity-90"
+                    }`}
+                  >
+                    {isFollowing(artistId) ? "Following" : "Follow Artist"}
                   </button>
-                  <button className="px-6 py-3 rounded-lg border-2 border-primary text-primary font-bold hover:bg-primary hover:text-primary-foreground transition-all duration-300 ease-out">
-                    Contact
-                  </button>
+                  <Link href="/contact">
+                    <button className="px-6 py-3 rounded-lg border-2 border-primary text-primary font-bold hover:bg-primary hover:text-primary-foreground transition-all duration-300 ease-out">
+                      Contact
+                    </button>
+                  </Link>
                 </div>
               </div>
             </div>

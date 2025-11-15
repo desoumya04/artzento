@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { useCart } from "@/lib/cart-context"
+import { formatPrice } from "@/lib/currency"
 
 export default function Cart() {
   const { items, removeFromCart, updateQuantity } = useCart()
@@ -68,8 +69,7 @@ export default function Cart() {
   }
 
   const total = items.reduce((sum, item) => {
-    const price = Number.parseFloat(item.price.replace("₹", "").replace(/,/g, ""))
-    return sum + price * item.quantity
+    return sum + item.artwork.price * item.quantity
   }, 0)
 
   const tax = total * 0.18
@@ -99,10 +99,10 @@ export default function Cart() {
                     className="flex gap-4 p-4 bg-white rounded-lg border border-border hover:border-primary transition-colors duration-300"
                   >
                     {/* Product Image */}
-                    <div className="flex-shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden bg-secondary">
+                    <div className="shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden bg-secondary">
                       <img
-                        src={item.image || "/placeholder.svg"}
-                        alt={item.title}
+                        src={item.artwork.image || "/placeholder.svg"}
+                        alt={item.artwork.title}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -110,9 +110,9 @@ export default function Cart() {
                     {/* Product Details */}
                     <div className="flex-1 flex flex-col justify-between">
                       <div>
-                        <h3 className="text-lg font-bold text-foreground mb-1">{item.title}</h3>
-                        <p className="text-sm text-muted-foreground mb-2">By {item.artistName}</p>
-                        <p className="text-lg font-bold text-primary">{item.price} each</p>
+                        <h3 className="text-lg font-bold text-foreground mb-1">{item.artwork.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-2">By {item.artwork.artist.name}</p>
+                        <p className="text-lg font-bold text-primary">{formatPrice(item.artwork.price, item.artwork.currency as any)} each</p>
                       </div>
 
                       {/* Quantity and Remove */}
@@ -142,13 +142,10 @@ export default function Cart() {
                     </div>
 
                     {/* Subtotal */}
-                    <div className="flex-shrink-0 text-right">
+                    <div className="shrink-0 text-right">
                       <p className="text-sm text-muted-foreground mb-2">Subtotal</p>
                       <p className="text-xl font-bold text-foreground">
-                        ₹
-                        {(
-                          Number.parseFloat(item.price.replace("₹", "").replace(/,/g, "")) * item.quantity
-                        ).toLocaleString("en-IN")}
+                        {formatPrice(item.artwork.price * item.quantity, item.artwork.currency as any)}
                       </p>
                     </div>
                   </div>
@@ -164,17 +161,17 @@ export default function Cart() {
                 <div className="space-y-3 mb-6 pb-6 border-b border-border">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span className="font-semibold text-foreground">₹{total.toLocaleString("en-IN")}</span>
+                    <span className="font-semibold text-foreground">{formatPrice(total, 'INR')}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Tax (18% GST)</span>
-                    <span className="font-semibold text-foreground">₹{tax.toLocaleString("en-IN")}</span>
+                    <span className="font-semibold text-foreground">{formatPrice(tax, 'INR')}</span>
                   </div>
                 </div>
 
                 <div className="flex justify-between mb-8">
                   <span className="text-lg font-bold text-foreground">Total</span>
-                  <span className="text-2xl font-bold text-primary">₹{grandTotal.toLocaleString("en-IN")}</span>
+                  <span className="text-2xl font-bold text-primary">{formatPrice(grandTotal, 'INR')}</span>
                 </div>
 
                 <button className="w-full px-6 py-4 rounded-lg bg-primary text-primary-foreground font-bold hover:opacity-90 transition-all duration-300 mb-3">

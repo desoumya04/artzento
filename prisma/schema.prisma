@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Artist {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  bio             String
+  profileImage    String
+  specialization  String
+  website         String?
+  instagram       String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  artworks        Artwork[]
+  followers       ArtistFollow[]
+}
+
+model Artwork {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  artistId    String        @db.ObjectId
+  price       Float         // Store as number, format with currency on frontend
+  currency    String        @default("INR") // INR or USD
+  image       String
+  description String
+  dimensions  String
+  year        Int
+  category    String
+  medium      String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  artist      Artist        @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  reviews     Review[]
+  cartItems   CartItem[]
+  wishlistItems WishlistItem[]
+}
+
+model Review {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  artworkId  String   @db.ObjectId
+  userName   String
+  rating     Int
+  comment    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  artwork    Artwork  @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+}
+
+model CartItem {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  artworkId  String   @db.ObjectId
+  sessionId  String   // To track anonymous users
+  quantity   Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  artwork    Artwork  @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+model WishlistItem {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  artworkId  String   @db.ObjectId
+  sessionId  String   // To track anonymous users
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  artwork    Artwork  @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, artworkId])
+  @@index([sessionId])
+}
+
+model ArtistFollow {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  artistId   String   @db.ObjectId
+  sessionId  String   // To track anonymous users
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  artist     Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, artistId])
+  @@index([sessionId])
+}

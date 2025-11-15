@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { useWishlist } from "@/lib/wishlist-context"
+import { formatPrice } from "@/lib/currency"
 
 export default function WishlistPage() {
   const { items, removeFromWishlist, clearWishlist } = useWishlist()
@@ -58,23 +59,23 @@ export default function WishlistPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {items.map((item) => (
               <div
-                key={item.artworkId}
+                key={item.id}
                 className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ease-out border border-border"
               >
                 <div className="relative h-48 overflow-hidden bg-muted">
                   <img
-                    src={item.image || "/placeholder.svg"}
-                    alt={item.title}
+                    src={item.artwork.image || "/placeholder.svg"}
+                    alt={item.artwork.title}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 ease-out"
                   />
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-primary">
-                    {item.price}
+                    {formatPrice(item.artwork.price, item.artwork.currency as any)}
                   </div>
                 </div>
 
                 <div className="p-4">
-                  <h3 className="font-bold text-lg text-foreground mb-1">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{item.artistName}</p>
+                  <h3 className="font-bold text-lg text-foreground mb-1">{item.artwork.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{item.artwork.artist.name}</p>
 
                   <div className="flex gap-2">
                     <Link href={`/artwork/${item.artworkId}`} className="flex-1">

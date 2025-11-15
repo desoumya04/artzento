@@ -1,14 +1,51 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ArtworkCard } from "@/components/artwork-card"
-import { ArtistSubmissionForm } from "@/components/artist-submission-form"
-import { artworks } from "@/lib/mock-data"
+
+interface Artist {
+  id: string
+  name: string
+}
+
+interface Artwork {
+  id: string
+  title: string
+  artistId: string
+  price: number
+  currency: string
+  image: string
+  description: string
+  dimensions: string
+  year: number
+  category: string
+  medium?: string | null
+  artist: Artist
+}
 
 export default function Home() {
-  const featuredArtworks = artworks.slice(0, 6)
+  const [featuredArtworks, setFeaturedArtworks] = useState<Artwork[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchArtworks()
+  }, [])
+
+  const fetchArtworks = async () => {
+    try {
+      const response = await fetch('/api/artworks')
+      const data = await response.json()
+      // Get the first 6 artworks
+      setFeaturedArtworks(data.slice(0, 6))
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching artworks:', error)
+      setLoading(false)
+    }
+  }
 
   return (
     <>
@@ -48,7 +85,7 @@ export default function Home() {
                   Meet Artists
                 </Link>
                 <Link
-                  href="#submit-art"
+                  href="/submit"
                   className="inline-flex items-center justify-center px-8 py-4 rounded-lg bg-secondary text-foreground font-bold hover:bg-secondary/80 transition-all duration-300 ease-out"
                 >
                   Submit Your Work
@@ -68,11 +105,17 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {featuredArtworks.map((artwork) => (
-                <ArtworkCard key={artwork.id} artwork={artwork} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                {featuredArtworks.map((artwork) => (
+                  <ArtworkCard key={artwork.id} artwork={artwork} />
+                ))}
+              </div>
+            )}
 
             <div className="text-center">
               <Link
@@ -121,45 +164,35 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Artist Submission */}
-        <section id="submit-art" className="py-16 md:py-24">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-start">
-              <div className="lg:col-span-2 space-y-6">
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
-                  For Artists
-                </span>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                  Share your latest masterpiece with the Artzento community
-                </h2>
-                <p className="text-muted-foreground">
-                  Submit new works, connect with collectors, and join a network of creators shaping the future of art.
-                  We review every submission with care and respond within two business days.
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <svg className="mt-1 h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Feature-ready portfolio support and feedback from our curation team.
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <svg className="mt-1 h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Listing opportunities across categories including painting, sculpture, and digital art.
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <svg className="mt-1 h-4 w-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Personalised promotion through newsletters, spotlights, and social collaborations.
-                  </li>
-                </ul>
-              </div>
-              <div className="lg:col-span-3 rounded-xl border border-border bg-white/80 p-6 shadow-sm backdrop-blur">
-                <ArtistSubmissionForm />
-              </div>
+        {/* Artist Submission CTA */}
+        <section className="py-16 md:py-24 bg-linear-to-r from-primary/5 via-primary/10 to-primary/5">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <span className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary mb-6">
+              For Artists
+            </span>
+            <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6">
+              Ready to Share Your Art with the World?
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Join hundreds of talented artists on Artzento. Submit your artwork, connect with collectors, 
+              and grow your creative career with our supportive community.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/submit"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-lg bg-primary text-primary-foreground font-bold hover:opacity-90 transition-all duration-300 ease-out shadow-lg hover:shadow-xl"
+              >
+                Submit Your Artwork
+                <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+              <Link
+                href="/submit"
+                className="inline-flex items-center justify-center px-8 py-4 rounded-lg border-2 border-primary text-primary font-bold hover:bg-primary hover:text-primary-foreground transition-all duration-300 ease-out"
+              >
+                Learn More
+              </Link>
             </div>
           </div>
         </section>

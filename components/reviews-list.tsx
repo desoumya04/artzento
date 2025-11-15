@@ -3,7 +3,7 @@
 import { useReviews } from "@/lib/reviews-context"
 
 interface ReviewsListProps {
-  artworkId: number
+  artworkId: string
 }
 
 export function ReviewsList({ artworkId }: ReviewsListProps) {
@@ -28,7 +28,9 @@ export function ReviewsList({ artworkId }: ReviewsListProps) {
           <div className="flex justify-between items-start mb-2">
             <div>
               <h4 className="font-bold text-foreground dark:text-dark-foreground">{review.userName}</h4>
-              <p className="text-xs text-muted-foreground dark:text-dark-muted-foreground">{review.date}</p>
+              <p className="text-xs text-muted-foreground dark:text-dark-muted-foreground">
+                {new Date(review.createdAt).toLocaleDateString()}
+              </p>
             </div>
             <div className="flex gap-1">
               {[...Array(5)].map((_, i) => (

@@ -2,9 +2,33 @@
 
 import Link from "next/link"
 import type React from "react"
-import type { Artwork } from "@/lib/mock-data"
-import { getArtistById } from "@/lib/mock-data"
 import { useWishlist } from "@/lib/wishlist-context"
+import { formatPrice } from "@/lib/currency"
+
+interface Artist {
+  id: string | number
+  name: string
+  bio?: string
+  profileImage?: string
+  specialization?: string
+  website?: string | null
+  instagram?: string | null
+}
+
+interface ArtworkProp {
+  id: string | number
+  title: string
+  artistId?: string | number
+  price: number
+  currency: string
+  image: string
+  description?: string
+  dimensions?: string
+  year?: number
+  category?: string
+  medium?: string | null
+  artist?: Artist
+}
 
 function HeartIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -25,30 +49,25 @@ function HeartIcon(props: React.SVGProps<SVGSVGElement>) {
   )
 }
 
-export function ArtworkCard({ artwork }: { artwork: Artwork }) {
-  const artist = getArtistById(artwork.artistId)
+export function ArtworkCard({ artwork }: { artwork: ArtworkProp }) {
+  const artist = artwork.artist
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlistToggle = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
-    const wishlistItem = {
-      artworkId: artwork.id,
-      title: artwork.title,
-      price: artwork.price,
-      image: artwork.image,
-      artistName: artist?.name || "Unknown Artist",
-    }
+    const artworkId = artwork.id.toString()
 
-    if (isInWishlist(artwork.id)) {
-      removeFromWishlist(artwork.id)
+    if (isInWishlist(artworkId)) {
+      await removeFromWishlist(artworkId)
     } else {
-      addToWishlist(wishlistItem)
+      await addToWishlist(artworkId, artwork)
     }
   }
 
-  const isWishlisted = isInWishlist(artwork.id)
+  const artworkId = artwork.id.toString()
+  const isWishlisted = isInWishlist(artworkId)
 
   return (
     <div className="card-hover rounded-lg overflow-hidden bg-white relative">
@@ -78,7 +97,7 @@ export function ArtworkCard({ artwork }: { artwork: Artwork }) {
             <h3 className="font-bold text-lg text-foreground truncate mb-1">{artwork.title}</h3>
             <p className="text-sm text-muted-foreground mb-3">by {artist?.name || "Unknown Artist"}</p>
             <div className="flex justify-between items-center">
-              <span className="text-lg font-bold text-primary">{artwork.price}</span>
+              <span className="text-lg font-bold text-primary">{formatPrice(artwork.price, artwork.currency as any)}</span>
               <div className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-all duration-300 ease-out">
                 View Details
               </div>

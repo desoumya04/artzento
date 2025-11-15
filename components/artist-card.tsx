@@ -1,7 +1,15 @@
 import Link from "next/link"
-import type { Artist } from "@/lib/mock-data"
 
-export function ArtistCard({ artist }: { artist: Artist }) {
+interface ArtistProp {
+  id: string | number
+  name: string
+  bio: string
+  profileImage: string
+  specialization: string
+  instagram?: string | null
+}
+
+export function ArtistCard({ artist }: { artist: ArtistProp }) {
   return (
     <Link href={`/artist/${artist.id}`}>
       <div className="card-hover rounded-lg overflow-hidden bg-white text-center">

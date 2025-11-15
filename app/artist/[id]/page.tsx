@@ -1,26 +1,86 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { getArtistById, getArtworksByArtist } from "@/lib/mock-data"
 import { ArtworkCard } from "@/components/artwork-card"
 import { useArtistFollow } from "@/lib/artist-follow-context"
 
+interface Artwork {
+  id: string
+  title: string
+  artistId: string
+  price: number
+  currency: string
+  image: string
+  description: string
+  dimensions: string
+  year: number
+  category: string
+  medium?: string | null
+}
+
+interface Artist {
+  id: string
+  name: string
+  bio: string
+  profileImage: string
+  specialization: string
+  instagram?: string | null
+  artworks: Artwork[]
+}
+
 export default function ArtistProfile() {
   const params = useParams()
-  const artistId = Number.parseInt(params.id as string)
-  const artist = getArtistById(artistId)
-  const artworks = artist ? getArtworksByArtist(artistId) : []
+  const artistId = params.id as string
+  const [artist, setArtist] = useState<Artist | null>(null)
+  const [loading, setLoading] = useState(true)
   const { followArtist, unfollowArtist, isFollowing } = useArtistFollow()
 
-  const handleFollowToggle = () => {
-    if (isFollowing(artistId)) {
-      unfollowArtist(artistId)
-    } else {
-      followArtist(artistId)
+  useEffect(() => {
+    fetchArtist()
+  }, [artistId])
+
+  const fetchArtist = async () => {
+    try {
+      const response = await fetch(`/api/artists/${artistId}`)
+      if (!response.ok) {
+        setArtist(null)
+        setLoading(false)
+        return
+      }
+      const data = await response.json()
+      setArtist(data)
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching artist:', error)
+      setArtist(null)
+      setLoading(false)
     }
+  }
+
+  const handleFollowToggle = async () => {
+    if (!artist) return
+    
+    if (isFollowing(artist.id)) {
+      await unfollowArtist(artist.id)
+    } else {
+      await followArtist(artist.id)
+    }
+  }
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </main>
+        <Footer />
+      </>
+    )
   }
 
   if (!artist) {
@@ -68,12 +128,12 @@ export default function ArtistProfile() {
                   <button
                     onClick={handleFollowToggle}
                     className={`px-6 py-3 rounded-lg font-bold transition-all duration-300 ease-out ${
-                      isFollowing(artistId)
+                      isFollowing(artist.id)
                         ? "bg-secondary text-secondary-foreground hover:opacity-90"
                         : "bg-primary text-primary-foreground hover:opacity-90"
                     }`}
                   >
-                    {isFollowing(artistId) ? "Following" : "Follow Artist"}
+                    {isFollowing(artist.id) ? "Following" : "Follow Artist"}
                   </button>
                   <Link href="/contact">
                     <button className="px-6 py-3 rounded-lg border-2 border-primary text-primary font-bold hover:bg-primary hover:text-primary-foreground transition-all duration-300 ease-out">
@@ -90,9 +150,9 @@ export default function ArtistProfile() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h2 className="text-3xl font-bold text-foreground mb-8">Artworks by {artist.name}</h2>
 
-          {artworks.length > 0 ? (
+          {artist.artworks.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {artworks.map((artwork) => (
+              {artist.artworks.map((artwork) => (
                 <ArtworkCard key={artwork.id} artwork={artwork} />
               ))}
             </div>

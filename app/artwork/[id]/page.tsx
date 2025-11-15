@@ -1,26 +1,118 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { getArtworkById, getArtistById, getArtworksByArtist } from "@/lib/mock-data"
 import { ArtworkCard } from "@/components/artwork-card"
 import { useCart } from "@/lib/cart-context"
 import { useReviews } from "@/lib/reviews-context"
 import { ReviewForm } from "@/components/review-form"
 import { ReviewsList } from "@/components/reviews-list"
+import { formatPrice } from "@/lib/currency"
+
+interface Artist {
+  id: string
+  name: string
+  bio: string
+  profileImage: string
+  specialization: string
+  website?: string | null
+  instagram?: string | null
+}
+
+interface Artwork {
+  id: string
+  title: string
+  artistId: string
+  price: number
+  currency: string
+  image: string
+  description: string
+  dimensions: string
+  year: number
+  category: string
+  medium?: string | null
+  artist: Artist
+}
 
 export default function ArtworkDetail() {
   const params = useParams()
-  const artworkId = Number.parseInt(params.id as string)
-  const artwork = getArtworkById(artworkId)
-  const artist = artwork ? getArtistById(artwork.artistId) : null
+  const artworkId = params.id as string
+  const [artwork, setArtwork] = useState<Artwork | null>(null)
+  const [relatedArtworks, setRelatedArtworks] = useState<Artwork[]>([])
+  const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const [addedToCart, setAddedToCart] = useState(false)
-  const { addToCart } = useCart()
+  const { addToCart, items, updateQuantity } = useCart()
   const { getAverageRating, getReviewsByArtwork } = useReviews()
+
+  // Check if item is in cart and get its quantity
+  const cartItem = items.find(item => item.artworkId === artworkId)
+  const isInCart = !!cartItem
+  
+  // Sync quantity with cart when cart items change
+  useEffect(() => {
+    if (cartItem) {
+      setQuantity(cartItem.quantity)
+    } else {
+      setQuantity(1)
+    }
+  }, [cartItem])
+
+  useEffect(() => {
+    fetchArtwork()
+  }, [artworkId])
+
+  const fetchArtwork = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/artworks/${artworkId}`)
+      
+      if (!response.ok) {
+        setArtwork(null)
+        setLoading(false)
+        return
+      }
+      
+      const data = await response.json()
+      setArtwork(data)
+      
+      // Fetch related artworks by same artist
+      if (data.artistId) {
+        const artistResponse = await fetch(`/api/artists/${data.artistId}`)
+        if (artistResponse.ok) {
+          const artistData = await artistResponse.json()
+          const related = artistData.artworks
+            .filter((a: Artwork) => a.id !== artworkId)
+            .slice(0, 3)
+          setRelatedArtworks(related)
+        }
+      }
+      
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching artwork:', error)
+      setArtwork(null)
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading artwork...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    )
+  }
 
   if (!artwork) {
     return (
@@ -39,21 +131,26 @@ export default function ArtworkDetail() {
     )
   }
 
-  const relatedArtworks = getArtworksByArtist(artwork.artistId)
-    .filter((a) => a.id !== artwork.id)
-    .slice(0, 3)
+  const artist = artwork.artist
 
-  const handleAddToCart = () => {
-    addToCart({
-      artworkId: artwork.id,
-      quantity,
-      price: artwork.price,
-      title: artwork.title,
-      image: artwork.image,
-      artistName: artist?.name || "Unknown",
-    })
-    setAddedToCart(true)
-    setTimeout(() => setAddedToCart(false), 2000)
+  const handleAddToCart = async () => {
+    try {
+      if (isInCart) {
+        // Update to the new quantity
+        await updateQuantity(artwork.id, quantity)
+      } else {
+        // Add new item
+        await addToCart(artwork.id, artwork)
+        // If quantity is more than 1, update it
+        if (quantity > 1) {
+          await updateQuantity(artwork.id, quantity)
+        }
+      }
+      setAddedToCart(true)
+      setTimeout(() => setAddedToCart(false), 2000)
+    } catch (error) {
+      console.error('Failed to add to cart:', error)
+    }
   }
 
   const averageRating = getAverageRating(artwork.id)
@@ -119,7 +216,7 @@ export default function ArtworkDetail() {
               </div>
 
               <div className="border-b border-border dark:border-dark-border pb-6 mb-6">
-                <p className="text-3xl font-bold text-primary">{artwork.price}</p>
+                <p className="text-3xl font-bold text-primary">{formatPrice(artwork.price, artwork.currency as any)}</p>
               </div>
 
               {/* Description */}
@@ -172,7 +269,7 @@ export default function ArtworkDetail() {
                     addedToCart ? "bg-green-500 text-white" : "bg-primary text-primary-foreground hover:opacity-90"
                   }`}
                 >
-                  {addedToCart ? "✓ Added to Cart" : "Add to Cart"}
+                  {addedToCart ? "✓ Updated Cart" : isInCart ? "Update Cart" : "Add to Cart"}
                 </button>
 
                 <button className="px-8 py-3 rounded-lg border-2 border-primary text-primary font-bold hover:bg-primary hover:text-primary-foreground transition-all duration-300 ease-out">

@@ -4,82 +4,124 @@ import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 
 export interface CartItem {
-  artworkId: number
+  id: string
+  artworkId: string
   quantity: number
-  price: string
-  title: string
-  image: string
-  artistName: string
+  artwork: {
+    id: string
+    title: string
+    price: number
+    currency: string
+    image: string
+    artist: {
+      name: string
+    }
+  }
 }
 
 export interface CartContextType {
   items: CartItem[]
-  addToCart: (item: CartItem) => void
-  removeFromCart: (artworkId: number) => void
-  updateQuantity: (artworkId: number, quantity: number) => void
-  clearCart: () => void
+  addToCart: (artworkId: string, artwork: any) => Promise<void>
+  removeFromCart: (artworkId: string) => Promise<void>
+  updateQuantity: (artworkId: string, quantity: number) => Promise<void>
+  clearCart: () => Promise<void>
   getTotalPrice: () => number
   getTotalItems: () => number
+  loading: boolean
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
-  const [mounted, setMounted] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const savedCart = localStorage.getItem("artgallery-cart")
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart))
-      } catch (e) {
-        console.error("Failed to load cart from localStorage:", e)
-      }
-    }
-    setMounted(true)
+    fetchCart()
   }, [])
 
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem("artgallery-cart", JSON.stringify(items))
+  const fetchCart = async () => {
+    try {
+      const response = await fetch('/api/cart')
+      const data = await response.json()
+      setItems(data)
+    } catch (error) {
+      console.error('Failed to fetch cart:', error)
+    } finally {
+      setLoading(false)
     }
-  }, [items, mounted])
+  }
 
-  const addToCart = (item: CartItem) => {
-    setItems((prevItems) => {
-      const existingItem = prevItems.find((i) => i.artworkId === item.artworkId)
-
-      if (existingItem) {
-        return prevItems.map((i) =>
-          i.artworkId === item.artworkId ? { ...i, quantity: i.quantity + item.quantity } : i,
-        )
+  const addToCart = async (artworkId: string, artwork: any) => {
+    try {
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ artworkId, quantity: 1 }),
+      })
+      
+      if (response.ok) {
+        await fetchCart() // Refresh cart
       }
-
-      return [...prevItems, item]
-    })
+    } catch (error) {
+      console.error('Failed to add to cart:', error)
+      throw error
+    }
   }
 
-  const removeFromCart = (artworkId: number) => {
-    setItems((prevItems) => prevItems.filter((i) => i.artworkId !== artworkId))
+  const removeFromCart = async (artworkId: string) => {
+    try {
+      const response = await fetch(`/api/cart?artworkId=${artworkId}`, {
+        method: 'DELETE',
+      })
+      
+      if (response.ok) {
+        setItems((prevItems) => prevItems.filter((i) => i.artworkId !== artworkId))
+      }
+    } catch (error) {
+      console.error('Failed to remove from cart:', error)
+    }
   }
 
-  const updateQuantity = (artworkId: number, quantity: number) => {
+  const updateQuantity = async (artworkId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(artworkId)
+      await removeFromCart(artworkId)
       return
     }
-    setItems((prevItems) => prevItems.map((i) => (i.artworkId === artworkId ? { ...i, quantity } : i)))
+    
+    try {
+      const response = await fetch('/api/cart', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ artworkId, quantity }),
+      })
+      
+      if (response.ok) {
+        // Update local state
+        setItems((prevItems) => 
+          prevItems.map((i) => (i.artworkId === artworkId ? { ...i, quantity } : i))
+        )
+      }
+    } catch (error) {
+      console.error('Failed to update quantity:', error)
+    }
   }
 
-  const clearCart = () => {
+  const clearCart = async () => {
+    // Delete all items
+    for (const item of items) {
+      await removeFromCart(item.artworkId)
+    }
     setItems([])
   }
 
   const getTotalPrice = () => {
     return items.reduce((total, item) => {
-      const price = Number.parseFloat(item.price.replace("₹", "").replace(/,/g, ""))
-      return total + price * item.quantity
+      return total + item.artwork.price * item.quantity
     }, 0)
   }
 
@@ -97,6 +139,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         clearCart,
         getTotalPrice,
         getTotalItems,
+        loading,
       }}
     >
       {children}

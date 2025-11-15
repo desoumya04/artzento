@@ -1,12 +1,38 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ArtworkCard } from "@/components/artwork-card"
-import { artworks, searchArtworks, sortArtworks } from "@/lib/mock-data"
+
+interface Artist {
+  id: string
+  name: string
+  bio: string
+  profileImage: string
+  specialization: string
+  website?: string | null
+  instagram?: string | null
+}
+
+interface Artwork {
+  id: string
+  title: string
+  artistId: string
+  price: number
+  currency: string
+  image: string
+  description: string
+  dimensions: string
+  year: number
+  category: string
+  medium?: string | null
+  artist: Artist
+}
 
 export default function Gallery() {
+  const [artworks, setArtworks] = useState<Artwork[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState<string>("All")
   const [priceFilter, setPriceFilter] = useState<string>("All")
   const [searchQuery, setSearchQuery] = useState<string>("")
@@ -14,10 +40,33 @@ export default function Gallery() {
 
   const categories = ["All", "Painting", "Abstract", "Digital Art", "Sculpture", "Photography", "Minimalist"]
 
+  useEffect(() => {
+    fetchArtworks()
+  }, [])
+
+  const fetchArtworks = async () => {
+    try {
+      const response = await fetch('/api/artworks')
+      const data = await response.json()
+      setArtworks(data)
+      setLoading(false)
+    } catch (error) {
+      console.error('Error fetching artworks:', error)
+      setLoading(false)
+    }
+  }
+
+  // Filter artworks
   let filtered = artworks
 
   if (searchQuery) {
-    filtered = searchArtworks(searchQuery)
+    const query = searchQuery.toLowerCase()
+    filtered = filtered.filter(
+      (artwork) =>
+        artwork.title.toLowerCase().includes(query) ||
+        artwork.description.toLowerCase().includes(query) ||
+        artwork.artist.name.toLowerCase().includes(query)
+    )
   }
 
   filtered = filtered.filter((artwork) => {
@@ -26,7 +75,23 @@ export default function Gallery() {
     return categoryMatch && priceMatch
   })
 
+  // Sort artworks
   const displayedArtworks = sortArtworks(filtered, sortBy)
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <main className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading artworks...</p>
+          </div>
+        </main>
+        <Footer />
+      </>
+    )
+  }
 
   return (
     <>
@@ -97,7 +162,7 @@ export default function Gallery() {
                 <div className="border-t border-border pt-8 mb-8">
                   <h3 className="font-bold text-foreground mb-4">Price Range</h3>
                   <div className="space-y-2">
-                    {["All", "Under $300", "$300 - $400", "Over $400"].map((range) => (
+                    {["All", "Under ₹30,000", "₹30,000 - ₹40,000", "Over ₹40,000"].map((range) => (
                       <button
                         key={range}
                         onClick={() => setPriceFilter(range)}
@@ -178,17 +243,26 @@ export default function Gallery() {
   )
 }
 
-function getPriceMatch(price: string, filter: string): boolean {
-  const priceNum = Number.parseInt(price.replace("$", ""))
+function getPriceMatch(price: number, filter: string): boolean {
+  if (filter === "All") return true
 
-  switch (filter) {
-    case "Under $300":
-      return priceNum < 300
-    case "$300 - $400":
-      return priceNum >= 300 && priceNum <= 400
-    case "Over $400":
-      return priceNum > 400
-    default:
-      return true
+  if (filter === "Under ₹30,000") return price < 30000
+  if (filter === "₹30,000 - ₹40,000") return price >= 30000 && price <= 40000
+  if (filter === "Over ₹40,000") return price > 40000
+
+  return true
+}
+
+function sortArtworks(artworks: Artwork[], sortBy: "price-low" | "price-high" | "newest"): Artwork[] {
+  const sorted = [...artworks]
+  
+  if (sortBy === "price-low") {
+    sorted.sort((a, b) => a.price - b.price)
+  } else if (sortBy === "price-high") {
+    sorted.sort((a, b) => b.price - a.price)
+  } else if (sortBy === "newest") {
+    sorted.sort((a, b) => b.year - a.year)
   }
+  
+  return sorted
 }

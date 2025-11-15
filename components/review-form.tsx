@@ -6,7 +6,7 @@ import { useState } from "react"
 import { useReviews } from "@/lib/reviews-context"
 
 interface ReviewFormProps {
-  artworkId: number
+  artworkId: string
 }
 
 export function ReviewForm({ artworkId }: ReviewFormProps) {
@@ -16,22 +16,26 @@ export function ReviewForm({ artworkId }: ReviewFormProps) {
   const [comment, setComment] = useState("")
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!userName.trim() || !comment.trim()) return
 
-    addReview({
-      artworkId,
-      rating,
-      userName: userName.trim(),
-      comment: comment.trim(),
-    })
+    try {
+      await addReview({
+        artworkId,
+        rating,
+        userName: userName.trim(),
+        comment: comment.trim(),
+      })
 
-    setUserName("")
-    setComment("")
-    setRating(5)
-    setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 3000)
+      setUserName("")
+      setComment("")
+      setRating(5)
+      setSubmitted(true)
+      setTimeout(() => setSubmitted(false), 3000)
+    } catch (error) {
+      console.error('Failed to submit review:', error)
+    }
   }
 
   return (

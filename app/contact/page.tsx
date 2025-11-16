@@ -60,7 +60,7 @@ export default function Contact() {
                 </svg>
               </div>
               <h3 className="font-bold text-foreground mb-2">Email</h3>
-              <p className="text-muted-foreground">hello@artistry.com</p>
+              <p className="text-muted-foreground">hello@Artzento.com</p>
             </div>
 
             <div className="bg-white rounded-lg p-6 border border-border text-center">

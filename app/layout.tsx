@@ -11,24 +11,13 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Artistry - Online Art Gallery",
+  title: "Artzento - Online Art Gallery",
   description:
     "Discover and purchase beautiful artworks from talented artists worldwide. Browse paintings, sculptures, and digital art in our modern online gallery.",
-  generator: "v0.app",
+  generator: "app",
   icons: {
     icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
+      { url: "/Alogo.svg" },
     ],
     apple: "/apple-icon.png",
   },

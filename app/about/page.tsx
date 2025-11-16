@@ -12,7 +12,7 @@ export default function About() {
         {/* Header */}
         <section className="bg-secondary border-b border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">About Artistry Gallery</h1>
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">About Artzento Gallery</h1>
             <p className="text-lg text-muted-foreground">Connecting art lovers with talented creators worldwide</p>
           </div>
         </section>
@@ -23,7 +23,7 @@ export default function About() {
           <section className="mb-16">
             <h2 className="text-3xl font-bold text-foreground mb-6">Our Mission</h2>
             <p className="text-lg text-muted-foreground leading-relaxed mb-4">
-              At Artistry Gallery, we believe that art should be accessible to everyone. Our mission is to create a
+              At Artzento Gallery, we believe that art should be accessible to everyone. Our mission is to create a
               platform where emerging and established artists can showcase their work to a global audience, while art
               enthusiasts can discover and purchase pieces that truly resonate with them.
             </p>

@@ -133,9 +133,9 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">About Artistry Gallery</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">About Artzento Gallery</h2>
                 <p className="text-lg text-muted-foreground mb-4">
-                  Artistry Gallery is a platform dedicated to showcasing contemporary art and connecting passionate
+                  Artzento Gallery is a platform dedicated to showcasing contemporary art and connecting passionate
                   collectors with talented artists.
                 </p>
                 <p className="text-lg text-muted-foreground mb-6">

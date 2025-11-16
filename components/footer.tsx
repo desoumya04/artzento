@@ -7,7 +7,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* About */}
           <div>
-            <h3 className="font-bold text-primary mb-4">Artistry</h3>
+            <h3 className="font-bold text-primary mb-4">Artzento</h3>
             <p className="text-sm text-muted-foreground">
               Discover and purchase beautiful artworks from talented artists worldwide.
             </p>
@@ -124,7 +124,7 @@ export function Footer() {
 
         {/* Bottom */}
         <div className="border-t border-border pt-8 flex flex-col sm:flex-row justify-between items-center">
-          <p className="text-sm text-muted-foreground">&copy; 2025 Artistry Gallery. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">&copy; 2025 Artzento Gallery. All rights reserved.</p>
           <div className="flex gap-6 text-sm mt-4 sm:mt-0">
             <a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 ease-out">
               Privacy Policy

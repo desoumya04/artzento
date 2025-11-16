@@ -28,8 +28,8 @@ export function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white text-sm">A</div>
-            <span className="hidden sm:inline">Artistry</span>
+            <img src="/Alogo.svg" width={40} height={30} alt="Artzento Logo" />
+            <span className="hidden sm:inline">Artzento</span>
           </Link>
 
           {/* Desktop Navigation */}

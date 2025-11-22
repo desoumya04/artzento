@@ -1,12 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { usePathname } from "next/navigation"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
 
-export function Navbar() {
+export function NavbarContent() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
   const { getTotalItems } = useCart()
@@ -146,5 +146,13 @@ export function Navbar() {
         )}
       </div>
     </nav>
+  )
+}
+
+export function Navbar() {
+  return (
+    <Suspense fallback={<div className="h-16 bg-white border-b border-border shadow-sm" />}>
+      <NavbarContent />
+    </Suspense>
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { ChangeEvent, FormEvent, useMemo, useState } from "react"
+import { revalidateArtworks } from "@/app/submit/actions"
 
 type FormStatus = "idle" | "success" | "error" | "uploading"
 
@@ -184,6 +185,8 @@ export function ArtistSubmissionForm() {
     } catch (error) {
       console.error('Error submitting artwork:', error)
       setStatus("error")
+    } finally {
+      await revalidateArtworks()
     }
   }
 

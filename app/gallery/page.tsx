@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ArtworkCard } from "@/components/artwork-card"
+import { getArtworks } from "./actions"
 
 interface Artist {
   id: string
@@ -46,8 +47,7 @@ export default function Gallery() {
 
   const fetchArtworks = async () => {
     try {
-      const response = await fetch('/api/artworks')
-      const data = await response.json()
+      const data = await getArtworks()
       setArtworks(data)
       setLoading(false)
     } catch (error) {

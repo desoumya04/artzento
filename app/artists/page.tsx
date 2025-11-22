@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ArtistCard } from "@/components/artist-card"
+import { getArtists } from "./actions"
 
 interface Artist {
   id: string
@@ -12,7 +13,6 @@ interface Artist {
   profileImage: string
   specialization: string
   instagram?: string | null
-  followersCount: number
 }
 
 export default function Artists() {
@@ -25,8 +25,7 @@ export default function Artists() {
 
   const fetchArtists = async () => {
     try {
-      const response = await fetch('/api/artists')
-      const data = await response.json()
+      const data = await getArtists()
       setArtists(data)
       setLoading(false)
     } catch (error) {

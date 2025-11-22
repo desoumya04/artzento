@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { parsePrice } from '@/lib/currency'
+import { revalidateArtworks, revalidateArtist } from '@/app/submit/actions'
 
 export async function GET() {
   try {
@@ -13,7 +14,11 @@ export async function GET() {
       }
     })
     
-    return NextResponse.json(artworks)
+    return NextResponse.json(artworks, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=900',
+      }
+    })
   } catch (error) {
     console.error('Error fetching artworks:', error)
     return NextResponse.json(
@@ -86,6 +91,10 @@ export async function POST(request: Request) {
         artist: true
       }
     })
+
+    // Revalidate caches
+    await revalidateArtworks()
+    await revalidateArtist(artist.id)
 
     return NextResponse.json(artwork, { status: 201 })
   } catch (error) {

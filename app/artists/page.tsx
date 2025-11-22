@@ -1,9 +1,8 @@
-"use client"
-
-import { useState, useEffect } from "react"
+import { Suspense } from "react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ArtistCard } from "@/components/artist-card"
+import { getArtists } from "./actions"
 
 interface Artist {
   id: string
@@ -12,29 +11,29 @@ interface Artist {
   profileImage: string
   specialization: string
   instagram?: string | null
-  followersCount: number
+}
+
+async function ArtistsList() {
+  const artists = await getArtists()
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {artists.map((artist) => (
+        <ArtistCard key={artist.id} artist={artist} />
+      ))}
+    </div>
+  )
+}
+
+function LoadingState() {
+  return (
+    <div className="flex justify-center items-center py-12">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
+  )
 }
 
 export default function Artists() {
-  const [artists, setArtists] = useState<Artist[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchArtists()
-  }, [])
-
-  const fetchArtists = async () => {
-    try {
-      const response = await fetch('/api/artists')
-      const data = await response.json()
-      setArtists(data)
-      setLoading(false)
-    } catch (error) {
-      console.error('Error fetching artists:', error)
-      setLoading(false)
-    }
-  }
-
   return (
     <>
       <Navbar />
@@ -52,17 +51,9 @@ export default function Artists() {
 
         {/* Artists Grid */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          {loading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {artists.map((artist) => (
-                <ArtistCard key={artist.id} artist={artist} />
-              ))}
-            </div>
-          )}
+          <Suspense fallback={<LoadingState />}>
+            <ArtistsList />
+          </Suspense>
         </div>
       </main>
       <Footer />

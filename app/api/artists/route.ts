@@ -14,7 +14,11 @@ export async function GET() {
       }
     })
     
-    return NextResponse.json(artists)
+    return NextResponse.json(artists, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=1800',
+      }
+    })
   } catch (error) {
     console.error('Error fetching artists:', error)
     return NextResponse.json(

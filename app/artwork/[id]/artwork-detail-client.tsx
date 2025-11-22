@@ -8,6 +8,7 @@ import { useReviews } from "@/lib/reviews-context"
 import { ReviewForm } from "@/components/review-form"
 import { ReviewsList } from "@/components/reviews-list"
 import { formatPrice } from "@/lib/currency"
+import { getArtworkById, getRelatedArtworks } from "./actions"
 
 interface Artist {
   id: string
@@ -63,27 +64,20 @@ export default function ArtworkDetailClient({ artworkId }: { artworkId: string }
   const fetchArtwork = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/artworks/${artworkId}`)
+      const data = await getArtworkById(artworkId)
       
-      if (!response.ok) {
+      if (!data) {
         setArtwork(null)
         setLoading(false)
         return
       }
       
-      const data = await response.json()
       setArtwork(data)
       
       // Fetch related artworks by same artist
       if (data.artistId) {
-        const artistResponse = await fetch(`/api/artists/${data.artistId}`)
-        if (artistResponse.ok) {
-          const artistData = await artistResponse.json()
-          const related = artistData.artworks
-            .filter((a: Artwork) => a.id !== artworkId)
-            .slice(0, 3)
-          setRelatedArtworks(related)
-        }
+        const related = await getRelatedArtworks(data.artistId, artworkId)
+        setRelatedArtworks(related)
       }
       
       setLoading(false)

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { ArtworkCard } from "@/components/artwork-card"
 import { useArtistFollow } from "@/lib/artist-follow-context"
+import { getArtistById } from "./actions"
 
 interface Artwork {
   id: string
@@ -40,13 +41,7 @@ export default function ArtistProfileClient({ artistId }: { artistId: string }) 
 
   const fetchArtist = async () => {
     try {
-      const response = await fetch(`/api/artists/${artistId}`)
-      if (!response.ok) {
-        setArtist(null)
-        setLoading(false)
-        return
-      }
-      const data = await response.json()
+      const data = await getArtistById(artistId)
       setArtist(data)
       setLoading(false)
     } catch (error) {

@@ -6,6 +6,10 @@ import { CartProvider } from "@/lib/cart-context"
 import { WishlistProvider } from "@/lib/wishlist-context"
 import { ReviewsProvider } from "@/lib/reviews-context"
 import { ArtistFollowProvider } from "@/lib/artist-follow-context"
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+
+
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -34,7 +38,10 @@ export default function RootLayout({
         <CartProvider>
           <WishlistProvider>
             <ArtistFollowProvider>
-              <ReviewsProvider>{children}</ReviewsProvider>
+              <ReviewsProvider>{children}
+                <Analytics />
+                <SpeedInsights />
+              </ReviewsProvider>
             </ArtistFollowProvider>
           </WishlistProvider>
         </CartProvider>
